@@ -6,13 +6,13 @@ const qs = require('querystring');
 const request = require('request');
 const moment = require('moment');
 
-function formatSlackMessage (incidentId, incidentName, slackUserName, incidentSlackChannel, googleDocUrl) {
+function formatSlackMessage (incidentId, incidentName, slackUserName, incidentSlackChannel) {
   // Prepare a rich Slack message
   // See https://api.slack.com/docs/message-formatting
   var slackMessage = {
     username: 'Incident Management',
     icon_emoji: ':warning:',
-    channel: '',
+    channel: 'incident',
     attachments: [],
     link_names: true,
     parse: 'full',
@@ -30,21 +30,6 @@ function formatSlackMessage (incidentId, incidentName, slackUserName, incidentSl
       color: '#8f0000',
       title: 'Slack channel',
       text: '#' + incidentSlackChannel
-  });
-
-  // Hangout link
-  slackMessage.attachments.push({
-      color: '#228B22',
-      title: 'Google Meet Meeting',
-      title_link: 'https://hangouts.google.com/hangouts/_/meet/' + process.env.GOOGLE_DOMAIN + '/incident-' + incidentId
-  });
-
-  // Google Doc
-  slackMessage.attachments.push({
-      color: '#3367d6',
-      title: 'Document',
-      title_link: googleDocUrl,
-      text: 'Use linked template and share in incident slack channel'
   });
 
   return slackMessage;
@@ -72,7 +57,6 @@ function createIncidentFlow (body) {
   var incidentManagerSlackHandle = body.user_name;
 
   var incidentSlackChannel = createSlackChannel(incidentId);
-  var googleDocUrl = createGoogleDoc(incidentId, incidentName);
 
   // Return a formatted message
   var slackMessage = formatSlackMessage(incidentId, incidentName, incidentManagerSlackHandle, incidentSlackChannel, googleDocUrl);
@@ -129,40 +113,6 @@ function sendSlackMessageToChannel(slackChannel, slackMessage) {
       throw new Error('Sending message to Slack channel failed');
     }
   });
-}
-
-function createGoogleDoc(incidentId, incidentName) {
-  // Disabled for now, because it's not so easy to grant Drive access via API on single/some files/folders
-  /*
-  var googleDrive = google.drive({
-    version: 'v3',
-    auth: process.env.GOOGLE_API_KEY
-  });
-
-  var params = {
-    fileId: process.env.GOOGLE_DOCS_FILE_ID,
-    supportsTeamDrives: true,
-    resource: {
-      title: 'Incident: ' + incidentName + ' (' + incidentId + ')' 
-    }
-  };
-
-  var result = googleDrive.files.copy(params)
-    .then(res => {
-      console.log(`New document ID is ${res.fileId}`);
-
-      return 'https://docs.google.com/document/d/' + res.fileId;
-    })
-    .catch(error => {
-      console.error('Copying Google Document failed', error);
-
-      return 'Copying Google Document failed';
-    });
-
-  console.log('Google result: ', result);
-  */
-
-  return 'https://docs.google.com/document/d/' + process.env.GOOGLE_DOCS_FILE_ID + '/template/preview'
 }
 
 http.createServer(function(req, res) {
