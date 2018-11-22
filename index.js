@@ -59,7 +59,7 @@ function createIncidentFlow (body) {
   var incidentSlackChannel = createSlackChannel(incidentId);
 
   // Return a formatted message
-  var slackMessage = formatSlackMessage(incidentId, incidentName, incidentManagerSlackHandle, incidentSlackChannel, googleDocUrl);
+  var slackMessage = formatSlackMessage(incidentId, incidentName, incidentManagerSlackHandle, incidentSlackChannel);
 
   // Bit of delay before posting message to channels, to make sure channel is created
   setTimeout(function () {
